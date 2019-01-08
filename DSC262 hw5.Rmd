@@ -1,0 +1,205 @@
+---
+title: "hw5"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+not too long less than 2 hours
+I did all works by myself. every question is related to the class material
+### 1-a
+```{r}
+s1<-2.46; s2<-3.2; s12<-s1^2; s22<-s2^2; n1<-15; n2<-20
+f<- s12/s22; f; min(pf(0.5909,14,19), 1-pf(0.5909,14,19))*2
+```
+since p= 0.31, under a=0.01 the null hypothesis is failed to reject.
+
+## 1-b
+```{r}
+m2<-187.6; m1<-194.1; se1<-s12/n1; se2<- s22/n2
+se<- sqrt(se1+se2); df=n1+n2-2; df
+qt(0.995,33) # for two tail
+d<-m2-m1; d-2.733*se; d+2.733*se
+```
+[-9.1148, -3.8851] is the interval under 99 % confidence level
+
+## 1-c
+```{r}
+(d-0)/se;pt(-6.7935,df)
+```
+test statistic is -6.7935; and the p-value is 0.0000000476
+Therefore the null hypothesis that m2-m1>=0 is rejected under a=0.01
+
+### 2-a
+```{r}
+d1<- 26.7-22.4; d2<- 33.2-31.2; d3<- 32.4-31.9; d4<- 26.6-24.2
+d5<- 27.2-29.9; d6<- 30.1-21.5; d7<-29.2-24.2; d8<-29.4-26.8
+d<-c(d1,d2,d3,d4,d5,d6,d7,d8);d
+mean(d); sample_variance= sd(d)^2; qt(0.9,7); sd_d<- sd(d)
+se<- sd(d)/sqrt(8)
+mean(d)+1.414 *se
+```
+[ , 4.4966] under a=0.1. which means that the batting score after training is 4.4966 higher than before average scores under a=0.1.
+
+## 2-b
+```{r}
+# H0: the difference between average of after training and before is 0 ( m_after - m_ before = 0)>> training does not increase the score
+# H1: the difference between average of after training and before is not 0.
+
+mean(d)/se; pt(2.4182,7)
+```
+t value from the hypothesis testing is 2.418 and p-value is 0.0231. which means under a=0.1, the null hypothesis is rejected.
+
+##3
+```{r}
+greek<-read.csv("/Users/jinseop/Desktop/greek.csv")
+```
+```{r}
+head(greek) #greek (1-involved, 0-not) hstuition (amount of money spent on the students' high school tuition)
+```
+
+## 3-a
+```{r}
+library(dplyr)
+not_invol<-greek %>% filter(greek ==0)
+invol<-greek %>% filter(greek ==1)
+sd_not_invol<- sd(not_invol$hstuition)
+sd_invol<-sd(invol$hstuition)
+ftest<-((sd_not_invol)^2)/((sd_invol)^2); ftest
+nrow(invol);nrow(not_invol); nrow(greek)
+min(pf(0.4241,87,161), 1-pf(0.4241,87,161)) *2
+```
+H0: high sdchool tuition variance between students involved in greek and not involved in greek are same ( Var_1 = Var_2)
+
+H1: these two variacne are different.
+
+F statistics = 0.4241, df1=87, df2=161 and pvalue is 1.77*e^-05
+Therefore under a=0.05, the null hypothesis is rejected.
+
+## 3-b
+(assuming uneaqual variance)
+```{r}
+tapply(greek$hstuition, greek$greek, mean)
+tapply(greek$hstuition, greek$greek, median)
+tapply(greek$hstuition, greek$greek, sd)
+(7101.067-12629.661)/(sqrt(13461.53^2/88+20670^2/162)) #welch-t-test
+v=(13461.53^2/88+20670^2/162)^2/((13461^2/88)^2/87+(20670^2/162)^2/161);v
+pt(-2.55, df=239)
+```
+H0: the difference between two group's tuition =0
+H1: the difference between two group's tuition is not zero.
+
+welch-t-test-statistics= -2.55
+df=239.97 >> 239 
+pvalue=0.00569
+conclusion: under a=0.05, the null hypothesis is rejected.
+
+##4
+two sided 99% margin of error=0.05
+```{r}
+z=2.58; p=0.5; q=0.5; m=0.05
+n=z^2*p*q/m^2;n
+````
+665.64 visitors.(666)
+
+##5 n=87 X=54(married)
+#5-a two sided 95% conf interval for married
+```{r}
+p=54/87
+se=sqrt(p*q/n); se
+p-1.96*se; p+1.96*se
+```
+[0.5783, 0.6630]
+
+#5-b   51.7%-married
+```{r}
+(p-0.517)/se
+1-pnorm(4.802)
+```
+test statistics=4.8
+pvalue : 7.854435 e^-07
+rejected null hypothesis and the p is not 51.7%
+
+# 5-c
+from the 5-a, under a=0.05, the p should be between the intervals. and the probability p is out from intervals is 0.05.
+
+## 6 n1 = 63 (without asthma), n2 = 51 (with)
+# X1 =28 people without ashthma to complete
+# X2=12 people with ashtam able to complete
+p1= 28/63; p22= 12/51
+# 6-a
+```{r}
+p1=28/63; p2= 12/51; p11<-(28+12)/(63+51)
+se12<-sqrt(p11*(1-p11)*(1/63+1/51))
+dif<-p1-p2
+dif-1.65*se12; dif+1.65*se12
+```
+[0.0608, 0.3574]
+
+# 6-b
+```{r}
+#alpha= 0.1 p1 >p2
+#H0: p1<=p2; H1: p1>p2
+dif/se12; 1-pnorm(2.32)
+```
+H0 : the difference between the proportion of people without asthma who complete the exercise regimen and the proportion of people with asthma who complete the exercise regimen is less or equal to 0.
+H1 : the difference is greater than 0.
+
+test statistics: 2.3265; p-value: 0.01
+under a=0.1 the null hypothesis is rejected. the difference is greater than zero.
+
+## 7
+```{r}
+# spring, summer, winter, authum =0.25
+#among 250 people 30 were winter; 100 authoum
+# 50 sping  70- summer chisquare a=0.05
+
+chisq.test(c(50,70,30,100), p=c(0.25,0.25,0.25,0.25))
+```
+H0: People's preference of their favorite season has eqaul probability (0.25 each)
+
+H1: people's preference of their favorite seasons is different
+
+test statistics =42.8, p-value=2.714*e^-09
+therefore under a=0.05, the null hypothesis is rejected.
+
+## 8
+```{r}
+# H0: employment status and gender are independent.
+# H1: they are not independent
+x<-matrix(c(302, 127, 216, 173), nrow=2, ncol=2, byrow=T)
+chisq.test(x, correct=F)
+```
+Test statistics =19.422 df= (2-1)*(2-1)=1
+p-value = 1.048 *e^-05
+under a=0.05, the null hypothesis that those two are independent is rejected.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
