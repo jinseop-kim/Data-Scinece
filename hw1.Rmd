@@ -1,0 +1,249 @@
+---
+title: "Homework1"
+output:
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, tidy= TRUE, tidy.opts=list(width.cutoff=60))
+```
+
+### Homework1
+
+# how long does take for this homework? >> I think it s about 4~5 hours.
+# I do this by myself. Also all questions are covered in class.
+
+
+## Question 1 
+# a) read data, summary!
+```{r read data and summary}
+read.csv("/Users/jinseop/Desktop/energy.csv", header=T)-> energy.data
+
+summary(energy.data)
+```
+
+# b)histogram!
+```{r }
+attach(energy.data)
+hist(Quantity, main="Histogram of Energy data", ylab="frequency")
+library(moments)
+skewness(energy.data$Quantity) #it's skewed to the right
+sd(energy.data$Quantity) #spread( standard deviation of Quantity)
+```
+#one center, Asymetric, significantly spreaded, seems there's outliers
+
+#c) how many?
+```{r}
+length(Quantity) #length of data
+log2(30)+1 #Sturge's formula
+```
+# therefore, the Sturge's formula suggests to use 6 bins.
+
+# d) mean, median, 15 percent trimmed mean of 2015 !
+
+```{r calculation}
+#mean
+mean(energy.data$Quantity)
+hist(energy.data$Quantity, xlab="Frequency", main="Histogram of Energy spending")
+abline(v=mean(energy.data$Quantity), col="red")
+text(mean(energy.data$Quantity)-5, 0.04,substitute(paste(bar(x),"=",m), list(m=round(mean(energy.data$Quantity),3))), col="red")
+#median
+median(energy.data$Quantity)
+abline(v=median(energy.data$Quantity), col="blue")
+text(median(energy.data$Quantity)-3, 18.5,substitute(paste(tilde(x),"=",m), list(m=round(median(energy.data$Quantity),3))), col="blue")
+
+sort(energy.data$Quantity)
+#15% trimmed mean
+mean(energy.data$Quantity, trim=0.15)
+abline(v=mean(energy.data$Quantity, trim=0.15), col="green")
+text(mean(energy.data$Quantity, trim=0.15), 10.5, substitute(paste(bar(x)[15],"=",m),
+list(m=round(mean(energy.data$Quantity, trim=0.15)))), col="green")
+```
+# E) 25th, 75% percentile!
+```{r quantile }
+quantile.data<-quantile(energy.data$Quantity, c(0.25,.75))
+quantile.data
+```
+
+# f) interquatile range!
+```{r interqutile}
+IQR(energy.data$Quantity)
+```
+
+# g) lower and upper fence and standard span!
+```{r standard span, lower and upper fence}
+quantile(energy.data$Quantity, .75)+1.5*IQR(energy.data$Quantity)->upper
+quantile(energy.data$Quantity, .25)-1.5*IQR(energy.data$Quantity) ->lower
+upper;lower
+1.5*IQR(energy.data$Quantity) #standard span
+fivenum(energy.data$Quantity)
+```
+# h) outliers?
+```{r}
+boxplot(energy.data$Quantity)
+qqnorm(energy.data$Quantity)
+qqline(energy.data$Quantity)
+#upper outlier
+subset(energy.data, Quantity >= upper)
+#Lower outlier
+subset(energy.data, Quantity<=lower)
+```
+#yes there are outliers but no lower outliers
+
+
+# i) var, sd, cv!
+```{r}
+var(energy.data$Quantity) #var
+
+sd(energy.data$Quantity) #sd
+
+sd(energy.data$Quantity)/mean(energy.data$Quantity) #cv
+```
+
+# j) calculate skew!
+```{r}
+skewness(energy.data$Quantity)
+```
+# it skewed to the right( long tail in right side)
+
+# k)  Box-Cox power transformation? v
+``` {r}
+
+x<-energy.data$Quantity
+library(MASS)
+bc1 <- boxcox(x~1)
+bc2 <- boxcox(x~1, lambda=c(-2,5, 1/10))
+bc1$x[bc1$y==max(bc1$y)]
+bcdata<-(x^-0.020202-1)/-0.020202
+bcdata
+```
+# l)
+```{r}
+hist(x)
+hist(log(x))
+hist(1/x)
+hist(x^2)
+hist(bcdata)
+
+summary(log(x))
+summary(bcdata)
+```
+
+# m) histogram of boxcox?
+```{r}
+hist(bcdata, main="Histogram of Box Cox transformation data")
+
+#mean
+mean(bcdata)
+abline(v=mean(bcdata), col="red")
+text(mean(bcdata)-5, 0.04,substitute(paste(bar(x),"=",m), list(m=round(mean(bcdata),3))), col="red")
+#median
+median(bcdata)
+abline(v=median(bcdata), col="blue")
+text(median(bcdata)-3, 18.5,substitute(paste(tilde(x),"=",m), list(m=round(median(bcdata),3))), col="blue")
+
+sort(bcdata)
+#15% trimmed mean
+mean(bcdata, trim=0.15)
+abline(v=mean(bcdata, trim=0.15), col="green")
+text(mean(bcdata, trim=0.15), 10.5, substitute(paste(bar(x)[15],"=",m),
+list(m=round(mean(bcdata, trim=0.15)))), col="green")
+```
+# This is not a normal distribution, but Compared to the original histogram, it looks more normally distributed. Mean, Mediun, Trimmed mean are all close. Spread is narrower than the past data.
+
+# n) qqplot of original data, qqplot of box-cox; comment;?
+```{r}
+par(mfrow=c(1,2))
+qqnorm(energy.data$Quantity, main= "Original")
+qqnorm(bcdata, main="box-cox")
+```
+# Comparing to the Original and Box cox transformed data, the box cox data seems much more normally distributed plots
+# o)
+```{r}
+xx1<-energy.data$Quantity
+mat<-matrix(nrow=9, ncol=5, byrow=FALSE)
+rownames(mat)<-c("x", "", "", "log(x)", "", "","sqrt(x)","","")
+colnames(mat)<-c("k", "xbar-k*s","xbar+k*s","Theorical %","Actual %")
+mat[,1]<-c(1,2,3)
+mat[,4]<-c(68, 95,99.7)
+mat[3,2]<-mean(xx1)-3*sd(xx1);mat[1,2]<-mean(xx1)-sd(xx1);mat[2,2]<-mean(xx1)-2*sd(xx1)
+mat[3,3]<-mean(xx1)+3*sd(xx1);mat[1,3]<-mean(xx1)+sd(xx1);mat[2,3]<-mean(xx1)+2*sd(xx1)
+xx2<-log(xx1)
+mat[6,2]<-mean(xx2)-3*sd(xx2);mat[4,2]<-mean(xx2)-sd(xx2);mat[5,2]<-mean(xx2)-2*sd(xx2)
+mat[6,3]<-mean(xx2)+3*sd(xx2);mat[4,3]<-mean(xx2)+sd(xx2);mat[5,3]<-mean(xx2)+2*sd(xx2)
+mat[1,5]<-28/30;mat[2,5]<-28/30;mat[3,5]<-29/30
+
+mat[4,5]<-20/30;mat[5,5]<-29/30;mat[6,5]<-30/30
+xx3<-sqrt(xx1)
+mat[9,2]<-mean(xx3)-3*sd(xx3);mat[7,2]<-mean(xx3)-sd(xx3);mat[8,2]<-mean(xx3)-2*sd(xx3)
+mat[9,3]<-mean(xx3)+3*sd(xx3);mat[7,3]<-mean(xx3)+sd(xx3);mat[8,3]<-mean(xx3)+2*sd(xx3)
+
+mat[7,5]<-26/30;mat[8,5]<-28/30;mat[9,5]<-29/30
+mat
+```
+
+
+## 2
+#a,b) install and load masaic ?
+```{r}
+#install.packages("mosaic")
+library(mosaic)
+data(SAT)
+head(SAT)
+```
+
+#c) teacher salary, total SAT score; form strength direction?
+```{r}
+sal<-SAT[,4]
+total<-SAT[,8]
+plot(sal, total, xlab= "Teacher's salary", ylab="Total SAT score", main="Plot Teacher's salary vs Total SAT Score")
+```
+# Teacher's salary and Total SAT score seem they do not have a positive relationship which I expected. it seemes somewhat having a negative relationship. Also, the data seems divergent.
+
+# d) correlation?
+```{r}
+cor(sal, total)
+```
+# Because people would think the teacher with higher salary would have better performance, but the data shows that it is not.
+
+# e) categorize??
+```{r}
+new_var<-cut(SAT$frac, breaks= c(0,22,49,81), labels=c("low","medium","high"))
+table(new_var)->relative_frequency
+relative_frequency/length(SAT$frac)
+```
+#f) color based on frac group?
+```{r}
+plot(sal, total, xlab= "Teacher's salary", ylab="Total SAT score", main="Plot Teacher's salary vs Total SAT Score", col=new_var)
+```
+# comment: Because each group has different color, I can distinguish the plots well. But still I do not know which group is this and which is another.
+
+#g)
+```{r}
+cor(sal[new_var == "low"], total[new_var == "low"])
+cor(sal[new_var == "medium"], total[new_var == "medium"])
+cor(sal[new_var == "high"], total[new_var == "high"])
+```
+#h) categorical variable?
+```{r}
+expendSAT <- ifelse(SAT$expend > 6, "high", "low")
+totalSAT <-ifelse(total>1000, "high","low")
+expendSAT
+totalSAT
+```
+
+#i) stacked box plot?
+```{r}
+data1<-data.frame(expendSAT,totalSAT)
+table(data1)
+
+mat1<-matrix(c(4,15,20,30),2,2, byrow=T)
+rownames(mat1)<-c("high expenditure", "low expenditure")
+colnames(mat1)<-c("total SAT high","total SAT low")
+mat1
+barplot(t(mat1),legend= c("high SAT score","low SAT score"), col=c("tomato","lightblue"),args.legend=list(x=1, y=max(colSums(t(mat1))+0.1),bty="n"))
+```
+# The data shows that high expenditure doesn't lead to the high scores. It shows the lower expenditure makes more people with high SAT score.
+# Why? Because people would think that higher expenditure and higher scores are like the causes and effects. So parents would like to spend more money for children's education. But this data set shows that it is not true on this data set.
