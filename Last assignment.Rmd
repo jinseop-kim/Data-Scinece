@@ -1,0 +1,161 @@
+---
+title: "DSC Homework 7"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+setwd("~/Desktop/class/dsc")
+house<-read.csv("houses.csv", header=T)
+```
+
+#1 state assumptions in terms of the variables
+# y= sellingprice ~ x= livingsize
+```{r}
+# 1 : given living sizes, the selling prices are independent.
+# 2 : There is a linear relationship between selling prices and living sizes( Expected value of error terms = 0)
+# 3 : The variance is constant across all values of living sizes, known as homoscedasticity.
+# 4 : For a specified value of selling prices and living sizes is normally distributed.
+# 5 : living sizes are fixed, known quantities.
+```
+
+# 2 pearson 
+```{r}
+cor(house$livingsize, house$sellingprice)
+```
+0.626
+
+#3 scatter plot of selling price over living space size
+```{r}
+plot(house$livingsize, house$sellingprice)
+```
+It seems these two variables have a positive relationship. So linear regression would be good for it.
+
+#4 simple regression, report the prediction equation
+```{r}
+house.lm<- lm(sellingprice~livingsize, data=house)
+house.lm
+```
+
+selling price = 15.30 + 14.01 * (living size)
+
+#5 estimated mean selling price with living space size 1.5
+```{r}
+predict(house.lm, newdata=data.frame(livingsize=1.5))
+
+```
+36.30467
+
+# 6 space size of 3.2
+```{r}
+predict(house.lm, newdata=data.frame(livingsize=3.2))
+```
+60.1154
+
+# 7 Yes. Those two questions have the same equation and what I need to do is plugging in the different x-values into the same formula.
+
+# 8 1.2 feet 90% CI
+```{r}
+predict(house.lm, newdata=data.frame(livingsize=1.2), interval="confidence", level=0.9)
+```
+[30.15566, 34.0499]
+the probability that selling price for living size=1.2 is between 30.15566 and 34.0499 is 90 %
+
+# 9 90% predicition, selling price for 1.2
+```{r}
+predict(house.lm, newdata=data.frame(livingsize=1.2), interval="predict", level=0.9)
+```
+90 % confidence that the interval (23.69295, 40.51261) contains the true selling prices when the living size is at 1.2
+
+# 10 construct 95% confidence interval for the slope of the estimated regression equation and interpret the results.
+```{r} 
+# n=26 B1=14.01
+s2<-1/24*sum((house$sellingprice-mean(house$sellingprice))^2)
+denominator<-sum((house$livingsize-mean(house$livingsize))^2)
+varB1<-s2/denominator; SEB1<-sqrt(varB1)
+
+qt(0.975,24)
+(14.01-2.063899*SEB1);(14.01+2.063899*SEB1)
+```
+[4.583954, 23.43605]
+95% confident that that interval between 4.583954 and 23.43605 captures the true population slope
+
+# 11 Test B1=0 or not a=0.05
+```{r}
+14.01/SEB1 # t
+2*(1-pt(3.067, df=14)) #p-value
+```
+Since the p-value is less than 0.05, we reject the null hypothesis and conclude that there is a significant linear relationship between selling price and living size.
+
+#12 what is the value of the coefficient determination
+```{r}
+summary(house.lm)
+```
+Coefficient of Determination is 0.3919
+R^2 represents the proportion of variability in selling price that is explained by its linear relationship with livingsize. Since our R^2 is 0.3919, there is positive linear relationship.
+
+#  13 diagnostic plot (residual plot and normal qq plot), comment vvv
+```{r}
+par(mfrow=c(2,2))
+plot(house.lm)
+```
+
+
+#14 calculate the prediction equation for selling price as a function of living space size and whether or not the house has a fireplace. report the prediction equatiuon. at the a=0.10, does having fireplace significantly predict the selling price once we have accounted for living space size?
+```{r}
+house.lm1<-lm(sellingprice~livingsize+fireplace, data=house)
+summary(house.lm1)
+```
+Selling Price = 14.630 + 13.711*(livingsize)+ 3.987*(fireplaceyes)
+ 
+P-value is 0.057660, therefore under a=0.1, we reject the null hypothesis that B1(firespace)=0. Therefore having fireplace increases predicting selling price.( R-squares now 0.4818 from 0.3919)
+
+R-square 0.4818
+
+
+#15
+```{r}
+house.lm2<-lm(sellingprice~livingsize*fireplace, data=house)
+summary(house.lm2)
+```
+selling price= 13.993+ 14.174*(livingsize)+ 6.073*(fireplace) -1.498(living & fireplace)
+
+the interaction is not that significant at a=0.05.
+Because we can see the t-value of interaction is -0.202. which is small.
+
+R-sqaure 0.4828
+#16
+
+```{r}
+house.lm3<-lm(sellingprice~livingsize+fireplace+age+sitesize, data=house)
+summary(house.lm3)
+```
+sellingprice = 22.517 + 12.97*livingsize +5.07* fireplace -0.17466 * Age -0.11566 * Sitesize
+
+R-square 0.6219
+
+#17
+```{R}
+aov(house.lm3)
+house.lm4<-lm(sellingprice~livingsize+fireplace, data=house)
+aov(house.lm4)
+
+
+F<-((467.6292-353.6574)/(4-2))/ (341.1998/(26-4-1))
+1-pf(3.507341, 21,23)
+```
+p-value is 0.0021 therefore adding the two variables in model increases model significantly. 
+F-statistic= 3.50
+
+
+
+
+
+
+
+
+
+
+
+
