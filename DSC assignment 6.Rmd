@@ -1,0 +1,136 @@
+---
+title: "DSC Assignment 6"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+```{r}
+setwd("~/Desktop/class/dsc")
+asthma<-read.csv("asthma.csv")
+```
+
+# 1-a why wilcoxon?
+```{r}
+hist(asthma$air)
+hist(asthma$sulf.diox)
+hist(asthma$air - asthma$sulf.diox)
+```
+Wilcoxon Signed-Rank Test does not require populations to be normally distributed as the paranetric paried t-test did. Based on the histograms, they do not appear to be normally distributed, so we want to use Wilcoxon signed rank test
+
+#1-b by hands
+```{r}
+a<-cbind(asthma$air-asthma$sulf.diox)
+sort(a)
+sum_positive<-2+3+6+10; sum_positive
+sum_negative<-1+4+5+7+8+9+11+12+13+14+15+16+17; sum_negative
+# T=21, n=17
+Mt<-17*18/4;Mt
+sigmat<-sqrt(17*18*35/24);sigmat
+Zt<-(21-76.5)/sigmat;Zt
+2*pnorm(-2.672)
+```
+p-value is 0.0075, under a=0.05 the null hypothesis is rejected
+
+#1-c 
+```{r}
+wilcox.test(asthma$air, asthma$sulf.diox, paired=T, exact=F, correct=F)
+
+```
+
+#1-d
+```{r}
+wilcox.test(asthma$air, asthma$sulf.diox, paired=T, exact=T, correct=F)
+
+0.008707-0.006653
+```
+0.002054 differ from result in part c 
+
+#2-a
+```{r}
+bulimia<-read.csv("bulimia.csv")
+bulimic<-bulimia$bulimic
+healthy<-bulimia$health[1:15]
+```
+
+#2-b
+```{r}
+hist(bulimic)
+hist(healthy)
+```
+Based on the histograms, the two samples do not appear to be coming from normally distributed populations, so we want to use the Wilcoxon rank sum test
+
+#2-c
+```{r}
+sort(bulimic)
+sort(healthy)
+rank_bul<-1+2+3+4+5+6+7+8+9+10+12+13+14+16+18+20+21.5+23+25+27+28+29+32; rank_bul
+rank_heal<-11+15+17+19+21.5+24+26+30.5+30.5+33+34+35+36+37+38; rank_heal
+W<-333.5; n1<-23;n2<-15
+Mw<-n1*(n1+n2+1)/2;Mw
+sigmaw<-sqrt(n1*n2*(n1+n2+1)/12);sigmaw
+Zw<-(W-Mw)/sigmaw;Zw; pnorm(-3.4343)*2;
+```
+p-value is 0.005940, under a=0.05, the null hypothesis is rejected.
+#2-d
+```{r}
+wilcox.test(bulimia$bulimic, bulimia$healthy, exact=F,correct=F)
+```
+
+# 3-a
+```{r}
+actg<-read.csv("actg.csv")
+actg$IVDrug<-as.factor(actg$IVDrug)
+boxplot(actg$Age~actg$IVDrug)
+```
+no
+
+#3-b
+```{r}
+library(dplyr)
+cu<-actg %>%
+  filter(actg$IVDrug =="Currently")
+ne<-actg %>%
+  filter(actg$IVDrug =="Never")
+pre<-actg %>%
+  filter(actg$IVDrug =="Previously")
+n1<-28; n2<-944;  n3<-179
+mean(actg$Age)
+var_cu<-sd(cu$Age)^2
+var_ne<-sd(ne$Age)^2
+var_pre<-sd(pre$Age)^2
+s2w<-(27*var_cu +943*var_ne+178*var_pre)/(28+944+179-3)
+s2b<-(n1*((mean(cu$Age)-38.61251)^2)+n2*((mean(ne$Age)-38.61251)^2)+n3*((mean(pre$Age)-38.61251)^2))/2
+F<-s2b/s2w;F
+1-pf(72.451,2,1148)
+```
+under a=0.05, pvalue=0,the null hypothesis is rejected.
+
+
+#3-c
+```{r}
+model1<-aov(actg$Age~actg$IVDrug)
+anova(model1)
+```
+# d)
+```{r}
+pairwise.t.test(actg$Age, actg$IVDrug,p.adj="bonferroni")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
